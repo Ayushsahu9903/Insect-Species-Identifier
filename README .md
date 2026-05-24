@@ -1,6 +1,6 @@
 # 🦋 Insect Species Identifier
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://insect-species-identifier-rgsosdkvawvpr95bj5excp.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://insect-species-identifier-occ4vxmx8cuqtmtik9hsbo.streamlit.app/)
 ![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.18.0-orange?logo=tensorflow&logoColor=white)
 ![Keras](https://img.shields.io/badge/Keras-3.8.0-red?logo=keras&logoColor=white)
@@ -13,7 +13,7 @@ An AI-powered web application that identifies **11 insect species** from images 
 
 ## 🌐 Live Demo
 
-👉 **[Click here to try the app](https://insect-species-identifier-rgsosdkvawvpr95bj5excp.streamlit.app/)**
+👉 **[Click here to try the app](https://insect-species-identifier-occ4vxmx8cuqtmtik9hsbo.streamlit.app/)**
 
 ---
 
