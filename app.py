@@ -2,55 +2,62 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 import tensorflow as tf
+import json
 
-# Load CNN model
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(
+    page_title="Insect Explorer",
+    page_icon="🦋",
+    layout="centered"
+)
+
+# ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
     try:
         model = tf.keras.models.load_model("insect_classifier_model.h5")
         return model
-    except Exception as e:
+    except Exception:
         st.error("❌ Failed to load the AI model.")
         st.stop()
 
 model = load_model()
 
-# Replace with your actual class labels
-import json
-
+# ---------------- LOAD CLASS LABELS ----------------
 with open("class_indices.json", "r") as f:
     class_indices = json.load(f)
+
 CLASS_NAMES = list(class_indices.keys())
 
-
-# App styling
-st.set_page_config(page_title="Insect Explorer", layout="centered")
-
+# ---------------- CUSTOM CSS ----------------
 st.markdown("""
     <style>
         body {
             background-color: #FFFEC8;
         }
+
         .stApp {
             background-color: #FFFEC8;
         }
+
         header {
             visibility: hidden;
         }
-        .title { font-size: 36px; color: green; font-weight: bold; }
-        .sub-title { font-size: 30px; color: #0d47a1; font-weight: bold; }
-        .upload-box {
-            border: 2px dashed #4caf50;
-            padding: 10px;
-            border-radius: 10px;
+
+        .title {
+            font-size: 36px;
+            color: green;
+            font-weight: bold;
             text-align: center;
         }
-        .result-box {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 10px;
-            background-color: #fff;
+
+        .sub-title {
+            font-size: 30px;
+            color: #0d47a1;
+            font-weight: bold;
+            text-align: center;
         }
+
         .emoji-float {
             position: fixed;
             font-size: 30px;
@@ -58,9 +65,14 @@ st.markdown("""
             z-index: 0;
             pointer-events: none;
         }
+
         @keyframes fly {
-            0% { transform: translateY(100vh) rotate(0deg); }
-            100% { transform: translateY(-120vh) rotate(360deg); }
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+            }
+            100% {
+                transform: translateY(-120vh) rotate(360deg);
+            }
         }
 
         .e1 { left: 10vw; animation: fly 10s linear infinite; }
@@ -73,10 +85,10 @@ st.markdown("""
         .e8 { left: 55vw; animation: fly 13s linear infinite; }
         .e9 { left: 75vw; animation: fly 11s linear infinite; }
 
-   </style>
+    </style>
 """, unsafe_allow_html=True)
 
-
+# ---------------- FLOATING EMOJIS ----------------
 st.markdown("""
     <div class="emoji-float e1">🪰</div>
     <div class="emoji-float e2">🦋</div>
@@ -89,30 +101,59 @@ st.markdown("""
     <div class="emoji-float e9">🕷️</div>
 """, unsafe_allow_html=True)
 
+# ---------------- TITLE ----------------
+st.markdown(
+    '<div class="title">🦋 Insect Explorer</div>',
+    unsafe_allow_html=True
+)
 
-
-# Title
-st.markdown('<div class="title">🦋 Insect Explorer</div>', unsafe_allow_html=True)
 st.write("Upload an image to identify the insect species.")
 
-
-
-# Upload image
-uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
+# ---------------- FILE UPLOAD ----------------
+uploaded_file = st.file_uploader(
+    "Choose an image",
+    type=["jpg", "jpeg", "png"]
+)
 
 if uploaded_file:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_container_width=True)
-    
-    if st.button("🔍 Identify Species"):
-        with st.spinner("Identifying..."):
-            # Preprocess image (as per your CNN input)
-            image = image.resize((150, 150))  # Resize to model input shape
-            img_array = np.array(image) / 255.0
-            img_array = img_array.reshape(1, 150, 150, 3)
 
+    image = Image.open(uploaded_file)
+
+    st.image(
+        image,
+        caption="Uploaded Image",
+        use_container_width=True
+    )
+
+    if st.button("🔍 Identify Species"):
+
+        with st.spinner("Identifying..."):
+
+            # Resize image
+            image = image.resize((150, 150))
+
+            # Convert to array
+            img_array = np.array(image) / 255.0
+
+            # Expand dimensions
+            img_array = np.expand_dims(img_array, axis=0)
+
+            # Predict
             prediction = model.predict(img_array)
-            predicted_class = CLASS_NAMES[np.argmax(prediction)]
-            st.markdown(f'<div class="sub-title">Result: 🐞 {predicted_class}</div>', unsafe_allow_html=True)
+
+            predicted_index = np.argmax(prediction)
+
+            predicted_class = CLASS_NAMES[predicted_index]
+
+            confidence = float(np.max(prediction)) * 100
+
+            # Result
+            st.markdown(
+                f'<div class="sub-title">Result: 🐞 {predicted_class}</div>',
+                unsafe_allow_html=True
+            )
+
+            st.success(f"Confidence: {confidence:.2f}%")
+
 else:
-      st.info("Please upload an image.")
+    st.info("Please upload an image.")
