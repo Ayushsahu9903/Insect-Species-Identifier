@@ -3,6 +3,7 @@ from PIL import Image
 import numpy as np
 import tensorflow as tf
 import json
+import os
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -15,16 +16,28 @@ st.set_page_config(
 @st.cache_resource
 def load_model():
     try:
-        model = tf.keras.models.load_model("insect_classifier_model.h5")
+        MODEL_PATH = os.path.join(
+            os.path.dirname(__file__),
+            "insect_classifier_model.h5"
+        )
+
+        model = tf.keras.models.load_model(MODEL_PATH)
+
         return model
-    except Exception:
-        st.error("❌ Failed to load the AI model.")
+
+    except Exception as e:
+        st.error(f"❌ Failed to load the AI model.\n\n{e}")
         st.stop()
 
 model = load_model()
 
 # ---------------- LOAD CLASS LABELS ----------------
-with open("class_indices.json", "r") as f:
+JSON_PATH = os.path.join(
+    os.path.dirname(__file__),
+    "class_indices.json"
+)
+
+with open(JSON_PATH, "r") as f:
     class_indices = json.load(f)
 
 CLASS_NAMES = list(class_indices.keys())
@@ -32,6 +45,7 @@ CLASS_NAMES = list(class_indices.keys())
 # ---------------- CUSTOM CSS ----------------
 st.markdown("""
     <style>
+
         body {
             background-color: #FFFEC8;
         }
@@ -70,6 +84,7 @@ st.markdown("""
             0% {
                 transform: translateY(100vh) rotate(0deg);
             }
+
             100% {
                 transform: translateY(-120vh) rotate(360deg);
             }
@@ -115,6 +130,7 @@ uploaded_file = st.file_uploader(
     type=["jpg", "jpeg", "png"]
 )
 
+# ---------------- PREDICTION ----------------
 if uploaded_file:
 
     image = Image.open(uploaded_file)
@@ -132,7 +148,7 @@ if uploaded_file:
             # Resize image
             image = image.resize((150, 150))
 
-            # Convert to array
+            # Convert image to array
             img_array = np.array(image) / 255.0
 
             # Expand dimensions
@@ -147,7 +163,7 @@ if uploaded_file:
 
             confidence = float(np.max(prediction)) * 100
 
-            # Result
+            # Display result
             st.markdown(
                 f'<div class="sub-title">Result: 🐞 {predicted_class}</div>',
                 unsafe_allow_html=True
